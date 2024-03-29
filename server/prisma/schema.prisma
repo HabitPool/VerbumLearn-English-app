@@ -1,0 +1,88 @@
+//Words - propous words for user
+//Users-UserCollections one-to-many
+//Users-TokenModels one-to-one
+//UserCollections-IntermediateWordsCollections one-to-many
+//UserWords-IntermediateWordsCollections one-to-many
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
+}
+
+model Users {
+  Id             String   @id @default(uuid())
+  UserName       String
+  Email          String   @unique
+  Password       String
+  Activated      Boolean  @default(false)
+  ActivationLink String
+  CreateAt       DateTime @default(now())
+
+  Token TokenModels?
+
+  UserCollections UserCollections[]
+}
+
+model TokenModels {
+  Id           String @id @default(uuid())
+  RefreshToken String
+
+  User   Users  @relation(fields: [UserId], references: [Id])
+  UserId String @unique
+}
+
+model Words {
+  Id             String @id @default(uuid())
+  Word           String
+  UkrTranslate   String
+  CollectionName String
+}
+
+model UserCollections {
+  Id   String @id @default(uuid())
+  Name String
+
+  User   Users  @relation(fields: [UserId], references: [Id])
+  UserId String
+
+  IntermediateWWordCollection IntermediateWordsCollections[]
+}
+
+model IntermediateWordsCollections {
+  Id String @id @default(uuid())
+
+  UserWords UserWords @relation(fields: [UserWord], references: [Id])
+  UserWord  String
+
+  UserCollections UserCollections @relation(fields: [UserColletion], references: [Id])
+  UserColletion   String
+}
+
+model UserWords {
+  Id        String     @id @default(uuid())
+  Word      String
+  Translate String
+  Priority  Int        @default(4)
+  Status    statusWord @default(WRONG)
+  CreateAt  DateTime   @default(now())
+  UpdateAt  DateTime   @default(now())
+
+  IntermediateWWordCollection IntermediateWordsCollections[]
+}
+
+model UserLogs {
+  Id       String   @id @default(uuid())
+  Email    String
+  CreateAt DateTime @default(now())
+}
+
+enum statusWord {
+  WRONG
+  MID
+  LERNED
+}
